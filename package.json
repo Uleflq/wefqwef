@@ -7,6 +7,7 @@
     "node": ">=20"
   },
   "scripts": {
+    "setup:browser": "node scripts/setup-browser.mjs",
     "build": "node scripts/build.mjs",
     "dev": "npm run build && python3 -m http.server ${PORT:-3000} --bind 0.0.0.0 --directory public",
     "start": "npm run dev",

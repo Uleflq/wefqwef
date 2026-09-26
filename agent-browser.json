@@ -1,0 +1,4 @@
+{
+  "executablePath": "./.hoplite/tools/chrome-for-testing-154.0.8037.57/chrome-linux64/chrome",
+  "args": "--use-gl=angle,--use-angle=swiftshader-webgl,--enable-unsafe-swiftshader"
+}

@@ -48327,6 +48327,15 @@ varying vec3 vONrm;`,
   function Vc(B, A) {
     return B.u2 + ((A - B.zA) / (B.zB - B.zA)) * (B.u3 - B.u2);
   }
+  function profileSlope(previous, next, previousSpan, nextSpan) {
+    if (previous * next <= 0) return 0;
+    const previousWeight = 2 * nextSpan + previousSpan;
+    const nextWeight = nextSpan + 2 * previousSpan;
+    return (
+      (previousWeight + nextWeight) /
+      (previousWeight / previous + nextWeight / next)
+    );
+  }
   var Xe = class {
       constructor(A, I) {
         this.loops = A;
@@ -48370,11 +48379,16 @@ varying vec3 vONrm;`,
               return U.subVectors(Q[E], Q[E - 1]).divideScalar(i[E] - i[E - 1]);
             let S = i[l] - i[l - 1],
               k = i[l + 1] - i[l];
-            return (
-              uy.subVectors(Q[l], Q[l - 1]).multiplyScalar(k / (S * (S + k))),
-              fy.subVectors(Q[l + 1], Q[l]).multiplyScalar(S / (k * (S + k))),
-              U.addVectors(uy, fy)
-            );
+            // Limit each tangent so a panel cannot fold past its control sections.
+            for (const axis of ["x", "y", "z"]) {
+              U[axis] = profileSlope(
+                (Q[l][axis] - Q[l - 1][axis]) / S,
+                (Q[l + 1][axis] - Q[l][axis]) / k,
+                S,
+                k,
+              );
+            }
+            return U;
           };
         (s(t, Yy), s(t + 1, Ly));
         let a = e * e,
@@ -48406,8 +48420,6 @@ varying vec3 vONrm;`,
         return (Q + i) / 2;
       }
     },
-    uy = new y(),
-    fy = new y(),
     Yy = new y(),
     Ly = new y(),
     Zd = new y(),
@@ -48802,15 +48814,17 @@ varying vec3 vONrm;`,
     for (let Q = 1; Q < A - 1; Q++) {
       let i = I[Q] - I[Q - 1],
         E = I[Q + 1] - I[Q];
-      C[Q] =
-        ((g[Q] - g[Q - 1]) / i) * (E / (i + E)) +
-        ((g[Q + 1] - g[Q]) / E) * (i / (i + E));
+      C[Q] = profileSlope(
+        (g[Q] - g[Q - 1]) / i,
+        (g[Q + 1] - g[Q]) / E,
+        i,
+        E,
+      );
     }
+    // The profile is constant beyond its ends, so both end tangents stay zero.
     return (
-      (C[0] = (g[1] - g[0]) / (I[1] - I[0])),
-      (C[A - 1] = (g[A - 1] - g[A - 2]) / (I[A - 1] - I[A - 2])),
       (Q) => {
-        if (Q <= I[0]) return g[0] + C[0] * (Q - I[0]) * 0;
+        if (Q <= I[0]) return g[0];
         if (Q >= I[A - 1]) return g[A - 1];
         let i = 0;
         for (; Q > I[i + 1]; ) i++;
