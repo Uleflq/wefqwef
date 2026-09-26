@@ -42,3 +42,17 @@ Tests evaluate the same geometry code used by the game, checking panel bounds,
 profile continuity, finite mesh data, left/right symmetry and standalone build
 consistency. GitHub Actions runs these checks and uploads the playable HTML as
 the `the-long-road` artifact on every push.
+
+## Headless WebGL verification
+
+The sandbox's bundled Chrome 152 failed to create a WebGL 2 context. For Linux
+x64 verification, use the pinned official Chrome for Testing with SwiftShader:
+
+```sh
+npm run setup:browser
+agent-browser --session car open http://localhost:3000/
+```
+
+`agent-browser.json` keeps the executable and graphics flags consistent across
+commands. The idempotent installer keeps the browser under ignored `.hoplite/`
+and does not change game dependencies or the browser used by players.
