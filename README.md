@@ -21,8 +21,8 @@ npm test       # Run regression checks
 
 `PORT` can override the server port. No npm dependencies are needed.
 
-- `src/game.js`: readable, formatting-only recovery of the bundled JavaScript,
-  including the original Three.js and Rapier versions.
+- `src/game.js`: editable recovery of the bundled JavaScript, with corrected car
+  surface interpolation and the original Three.js and Rapier versions.
 - `src/index.html`: single-file build template.
 - `public/index.html`: committed playable build; rebuild after source edits.
 - `reference/`: untouched original build, car reference images and historical
@@ -30,3 +30,15 @@ npm test       # Run regression checks
 
 The original minified symbols are preserved to avoid altering unrelated game
 systems during source recovery.
+
+## Car model regression checks
+
+The body and cabin use shape-preserving Hermite tangents rather than unrestricted
+averaged tangents. This prevents the generated panels from bulging or folding
+beyond their control sections. The longitudinal profiles also meet their clamped
+ends with zero slope, avoiding a sharp lighting seam at the nose and tail.
+
+Tests evaluate the same geometry code used by the game, checking panel bounds,
+profile continuity, finite mesh data, left/right symmetry and standalone build
+consistency. GitHub Actions runs these checks and uploads the playable HTML as
+the `the-long-road` artifact on every push.
